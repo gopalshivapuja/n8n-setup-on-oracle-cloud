@@ -36,28 +36,44 @@ If you don't already have one, sign up for an Oracle Cloud Free Tier account. Th
 
 ### Create a Compute Instance
 
-1.  Log in to your Oracle Cloud Console.
-2.  Navigate to **Compute** > **Instances**.
-3.  Click **Create Instance**.
-4.  **Name**: Give your instance a descriptive name (e.g., `n8n-server`).
-5.  **Operating System or Image Source**: Select `Oracle Linux 8` or `Oracle Linux 9` (both come with Podman pre-installed and are free tier eligible).
+1.  Log in to your Oracle Cloud Console. *(Consider adding a screenshot of the OCI Console login page)*
+2.  Navigate to **Compute** > **Instances**. *(Consider adding a screenshot of the navigation path)*
+3.  Click **Create Instance**. *(Consider adding a screenshot of the 'Create Instance' button)*
+4.  **Name**: Give your instance a descriptive name (e.g., `n8n-arm-server`).
+5.  **Operating System or Image Source**: Select an "Always Free-eligible" image such as `Oracle Linux 8` or `Oracle Linux 9` (both come with Podman pre-installed and are free tier eligible for Arm).
 6.  **Placement**: Choose an Availability Domain. For free tier, you'll typically be limited to one.
-7.  **Shape**: Select an "Always Free eligible" shape. The `VM.Standard.E2.1.Micro` shape (1 OCPU, 1 GB RAM) is the most common free tier option. *However, for n8n, especially with AI components like Ollama, the 8GB RAM and 200 GB storage instance from the Ampere A1 Compute platform is highly recommended if available in your region.* This guide assumes you have an instance with at least 8GB RAM.
-8.  **Networking**: Ensure "Create new virtual cloud network" and "Create new public subnet" are selected if you don't have an existing VCN. Make note of your VCN and subnet names.
-9.  **Add SSH keys**: Generate a new SSH key pair or upload your existing public key. **Save the private key securely** as you will need it to connect to your instance.
-10. **Boot Volume**: The default 50 GB should be sufficient for the OS and n8n, but you can increase it to 200 GB for more storage, which is also free tier eligible.
-11. Click **Create**.
+7.  **Shape**: Select "Ampere" as the "Instance Shape" and choose the "VM.Standard.A1.Flex" shape. You can allocate up to **4 OCPUs** and **24 GB of memory** as part of the Always Free tier. *(Consider adding a screenshot showing the "Ampere" and "VM.Standard.A1.Flex" selection, and OCPU/Memory allocation)*
+    *   **Always Free Note**: Oracle Cloud provides 3,000 OCPU hours and 18,000 GB hours per month for free, which typically allows for a configuration of 4 OCPUs and 24 GB of memory for an Arm-based instance.
+8.  **Networking**: Ensure "Create new virtual cloud network" and "Create new public subnet" are selected if you don't have an existing VCN. Make note of your VCN and subnet names. *(Consider adding a screenshot of the networking configuration)*
+9.  **Add SSH keys**: Generate a new SSH key pair or upload your existing public key. **Save the private key securely** as you will need it to connect to your instance. *(Consider adding a screenshot of the SSH key section)*
+10. **Boot Volume**: The default 50 GB should be sufficient for the OS and n8n, but you can increase it to 200 GB for more storage, which is also free tier eligible. *(Consider adding a screenshot of the boot volume configuration)*
+11. Click **Create**. *(Consider adding a screenshot of the 'Create' button)*
 
-Wait for the instance to provision and show a "Running" state.
+Wait for the instance to provision and show a "Running" state. *(Consider adding a screenshot of a running instance)*
+
+You can also create the instance using the OCI CLI. Ensure the OCI CLI is installed and configured on your local machine, then use the following command (replace placeholders):
+
+```bash
+oci compute instance launch \
+  --compartment-id <compartment_ocid> \
+  --availability-domain <availability_domain> \
+  --shape VM.Standard.A1.Flex \
+  --shape-config '{\"ocpus\": 4, \"memoryInGBs\": 24}' \
+  --image-id <image_ocid> \
+  --subnet-id <subnet_ocid> \
+  --assign-public-ip true \
+  --ssh-authorized-keys-file <path_to_public_ssh_key>
+```
+For detailed CLI usage, refer to the [OCI CLI Command Reference](https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/).
 
 ### Configure Virtual Cloud Network (VCN) Security Lists
 
 To allow external access to n8n (port 5678) and Caddy (ports 80 and 443 for HTTP/HTTPS), you need to add ingress rules to your VCN's security list.
 
-1.  From your running instance details page, click on the **Subnet** link under "Virtual Cloud Network".
-2.  On the Subnet details page, click on the **Default Security List** (or the security list associated with your subnet).
-3.  Click **Add Ingress Rules**.
-4.  Add the following rules:
+1.  From your running instance details page, click on the **Subnet** link under "Virtual Cloud Network". *(Consider adding a screenshot of the instance details page with subnet link highlighted)*
+2.  On the Subnet details page, click on the **Default Security List** (or the security list associated with your subnet). *(Consider adding a screenshot of the subnet details page with security list highlighted)*
+3.  Click **Add Ingress Rules**. *(Consider adding a screenshot of the 'Add Ingress Rules' button)*
+4.  Add the following rules: *(Consider adding a screenshot of the ingress rules configuration with all rules added)*
 
     *   **Rule 1 (HTTP - Caddy)**:
         *   **Source Type**: CIDR
@@ -99,7 +115,7 @@ To allow external access to n8n (port 5678) and Caddy (ports 80 and 443 for HTTP
     ssh -i <path_to_your_private_key> opc@<your_instance_public_ip>
     ```
 
-    Replace `<path_to_your_private_key>` with the actual path to your `.oci` file and `<your_instance_public_ip>` with the public IP address of your Oracle Cloud instance.
+    Replace `<path_to_your_private_key>` with the actual path to your `.oci` file and `<your_instance_public_ip>` with the public IP address of your Oracle Cloud instance. *(Consider adding a screenshot of a successful SSH connection)*
 
 2.  **Update the system**:
 
@@ -115,9 +131,15 @@ To allow external access to n8n (port 5678) and Caddy (ports 80 and 443 for HTTP
     sudo dnf install git -y
     ```
 
-4.  **Install `podman-docker` (if `docker-compose` command is not found)**:
+4.  **Podman (Pre-installed on Oracle Linux)**:
 
-    Oracle Linux often comes with Podman, but the `docker-compose` command might not be directly available. `podman-docker` provides a `docker compose` compatibility layer.
+    Oracle Linux typically comes with Podman pre-installed. You can verify its version:
+
+    ```bash
+    podman --version
+    ```
+
+    If `podman-compose` or `docker compose` is not found, you might need to install `podman-docker` for compatibility:
 
     ```bash
     sudo dnf install podman-docker -y
@@ -135,13 +157,13 @@ To allow external access to n8n (port 5678) and Caddy (ports 80 and 443 for HTTP
     sudo firewall-cmd --list-all
     ```
 
-    Verify that `http`, `https`, and `5678/tcp` are listed under `ports` or `services`.
+    Verify that `http`, `https`, and `5678/tcp` are listed under `ports` or `services`. *(Consider adding a screenshot of the firewall-cmd --list-all output)*
 
 ## 5. n8n and Caddy Setup
 
 1.  **Clone the repository**:
 
-    On your Oracle Linux instance, clone the GitHub repository where this `README.md` will reside (or create the directory structure manually). Let's assume you've structured your project similar to this guide, with a `n8n-setup` directory.
+    On your Oracle Linux instance, clone the GitHub repository where this `README.md` resides (or create the directory structure manually). Let's assume you've structured your project similar to this guide, with a `n8n-setup` directory.
 
     ```bash
     git clone <your-github-repo-url>
@@ -160,6 +182,7 @@ To allow external access to n8n (port 5678) and Caddy (ports 80 and 443 for HTTP
     Create a file named `docker-compose.yml` inside your `n8n-setup` directory with the following content:
 
     ```yaml
+version: '3.8'
 services:
   caddy:
     image: docker.io/caddy:2
@@ -179,13 +202,13 @@ services:
     container_name: n8n
     restart: unless-stopped
     environment:
-      - N8N_HOST=\${N8N_HOST}
+      - N8N_HOST=${N8N_HOST}
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
       - NODE_ENV=production
-      - WEBHOOK_URL=\${WEBHOOK_URL}
-      - GENERIC_TIMEZONE=\${GENERIC_TIMEZONE}
-      - N8N_EDITOR_BASE_URL=\${N8N_EDITOR_BASE_URL}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
     volumes:
       - ./n8n/data:/home/node/.n8n:Z,U
     networks: [web]
@@ -217,7 +240,11 @@ N8N_EDITOR_BASE_URL=https://your_domain.com/
 GENERIC_TIMEZONE=Asia/Kolkata # Example: Europe/Berlin, America/New_York
     ```
 
-5.  **Start n8n and Caddy**:
+5.  **DNS Configuration (Important!)**:
+
+    Before starting the services, ensure your domain's A record points to the public IP address of your Oracle Cloud instance. This is crucial for Caddy to automatically provision SSL/TLS certificates.
+
+6.  **Start n8n and Caddy**:
 
     From the `n8n-setup` directory, run the following command to start your services. Oracle Linux uses Podman, so `podman-compose` is the preferred command.
 
@@ -229,7 +256,7 @@ GENERIC_TIMEZONE=Asia/Kolkata # Example: Europe/Berlin, America/New_York
 
     The `-d` flag runs the containers in detached mode (in the background).
 
-6.  **Verify container status**:
+7.  **Verify container status**:
 
     Check if the containers are running:
 
@@ -239,13 +266,13 @@ GENERIC_TIMEZONE=Asia/Kolkata # Example: Europe/Berlin, America/New_York
     # docker ps -a
     ```
 
-    You should see `n8n` and `caddy` containers in the "Up" state.
+    You should see `n8n` and `caddy` containers in the "Up" state. *(Consider adding a screenshot of the 'podman ps -a' output)*
 
 ## 6. Post-Setup and Access
 
 1.  **Access n8n**:
 
-    Open your web browser and navigate to `https://your_domain.com` (replace `your_domain.com` with the domain you configured). Caddy will automatically handle the SSL/TLS certificate provisioning, so it might take a minute or two for the HTTPS to become active on the first run.
+    Open your web browser and navigate to `https://your_domain.com` (replace `your_domain.com` with the domain you configured). Caddy will automatically handle the SSL/TLS certificate provisioning, so it might take a minute or two for the HTTPS to become active on the first run. *(Consider adding a screenshot of the n8n login/setup page)*
 
 2.  **Initial n8n Setup**:
 
@@ -253,7 +280,7 @@ GENERIC_TIMEZONE=Asia/Kolkata # Example: Europe/Berlin, America/New_York
 
 3.  **Explore n8n**:
 
-    Once logged in, you can start creating your workflows, connecting to various services, and automating tasks.
+    Once logged in, you can start creating your workflows, connecting to various services, and automating tasks. *(Consider adding a screenshot of the n8n dashboard)*
 
 ## 7. Troubleshooting and Tips
 

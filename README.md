@@ -36,20 +36,20 @@ If you don't already have one, sign up for an Oracle Cloud Free Tier account. Th
 
 ### Create a Compute Instance
 
-1.  Log in to your Oracle Cloud Console. *(Consider adding a screenshot of the OCI Console login page)*
-2.  Navigate to **Compute** > **Instances**. *(Consider adding a screenshot of the navigation path)*
-3.  Click **Create Instance**. *(Consider adding a screenshot of the 'Create Instance' button)*
+1.  Log in to your Oracle Cloud Console.
+2.  Navigate to **Compute** > **Instances**.
+3.  Click **Create Instance**.
 4.  **Name**: Give your instance a descriptive name (e.g., `n8n-arm-server`).
 5.  **Operating System or Image Source**: Select an "Always Free-eligible" image such as `Oracle Linux 8` or `Oracle Linux 9` (both come with Podman pre-installed and are free tier eligible for Arm).
 6.  **Placement**: Choose an Availability Domain. For free tier, you'll typically be limited to one.
-7.  **Shape**: Select "Ampere" as the "Instance Shape" and choose the "VM.Standard.A1.Flex" shape. You can allocate up to **4 OCPUs** and **24 GB of memory** as part of the Always Free tier. *(Consider adding a screenshot showing the "Ampere" and "VM.Standard.A1.Flex" selection, and OCPU/Memory allocation)*
+7.  **Shape**: Select "Ampere" as the "Instance Shape" and choose the "VM.Standard.A1.Flex" shape. You can allocate up to **4 OCPUs** and **24 GB of memory** as part of the Always Free tier.
     *   **Always Free Note**: Oracle Cloud provides 3,000 OCPU hours and 18,000 GB hours per month for free, which typically allows for a configuration of 4 OCPUs and 24 GB of memory for an Arm-based instance.
-8.  **Networking**: Ensure "Create new virtual cloud network" and "Create new public subnet" are selected if you don't have an existing VCN. Make note of your VCN and subnet names. *(Consider adding a screenshot of the networking configuration)*
-9.  **Add SSH keys**: Generate a new SSH key pair or upload your existing public key. **Save the private key securely** as you will need it to connect to your instance. *(Consider adding a screenshot of the SSH key section)*
-10. **Boot Volume**: The default 50 GB should be sufficient for the OS and n8n, but you can increase it to 200 GB for more storage, which is also free tier eligible. *(Consider adding a screenshot of the boot volume configuration)*
-11. Click **Create**. *(Consider adding a screenshot of the 'Create' button)*
+8.  **Networking**: Ensure "Create new virtual cloud network" and "Create new public subnet" are selected if you don't have an existing VCN. Make note of your VCN and subnet names.
+9.  **Add SSH keys**: Generate a new SSH key pair or upload your existing public key. **Save the private key securely** as you will need it to connect to your instance.
+10. **Boot Volume**: The default 50 GB should be sufficient for the OS and n8n, but you can increase it to 200 GB for more storage, which is also free tier eligible.
+11. Click **Create**.
 
-Wait for the instance to provision and show a "Running" state. *(Consider adding a screenshot of a running instance)*
+Wait for the instance to provision and show a "Running" state.
 
 You can also create the instance using the OCI CLI. Ensure the OCI CLI is installed and configured on your local machine, then use the following command (replace placeholders):
 
@@ -70,10 +70,10 @@ For detailed CLI usage, refer to the [OCI CLI Command Reference](https://docs.or
 
 To allow external access to n8n (port 5678) and Caddy (ports 80 and 443 for HTTP/HTTPS), you need to add ingress rules to your VCN's security list.
 
-1.  From your running instance details page, click on the **Subnet** link under "Virtual Cloud Network". *(Consider adding a screenshot of the instance details page with subnet link highlighted)*
-2.  On the Subnet details page, click on the **Default Security List** (or the security list associated with your subnet). *(Consider adding a screenshot of the subnet details page with security list highlighted)*
-3.  Click **Add Ingress Rules**. *(Consider adding a screenshot of the 'Add Ingress Rules' button)*
-4.  Add the following rules: *(Consider adding a screenshot of the ingress rules configuration with all rules added)*
+1.  From your running instance details page, click on the **Subnet** link under "Virtual Cloud Network".
+2.  On the Subnet details page, click on the **Default Security List** (or the security list associated with your subnet).
+3.  Click **Add Ingress Rules**.
+4.  Add the following rules:
 
     *   **Rule 1 (HTTP - Caddy)**:
         *   **Source Type**: CIDR
@@ -115,7 +115,7 @@ To allow external access to n8n (port 5678) and Caddy (ports 80 and 443 for HTTP
     ssh -i <path_to_your_private_key> opc@<your_instance_public_ip>
     ```
 
-    Replace `<path_to_your_private_key>` with the actual path to your `.oci` file and `<your_instance_public_ip>` with the public IP address of your Oracle Cloud instance. *(Consider adding a screenshot of a successful SSH connection)*
+    Replace `<path_to_your_private_key>` with the actual path to your `.oci` file and `<your_instance_public_ip>` with the public IP address of your Oracle Cloud instance.
 
 2.  **Update the system**:
 
@@ -157,7 +157,7 @@ To allow external access to n8n (port 5678) and Caddy (ports 80 and 443 for HTTP
     sudo firewall-cmd --list-all
     ```
 
-    Verify that `http`, `https`, and `5678/tcp` are listed under `ports` or `services`. *(Consider adding a screenshot of the firewall-cmd --list-all output)*
+    Verify that `http`, `https`, and `5678/tcp` are listed under `ports` or `services`.
 
 ## 5. n8n and Caddy Setup
 
@@ -266,13 +266,13 @@ GENERIC_TIMEZONE=Asia/Kolkata # Example: Europe/Berlin, America/New_York
     # docker ps -a
     ```
 
-    You should see `n8n` and `caddy` containers in the "Up" state. *(Consider adding a screenshot of the 'podman ps -a' output)*
+    You should see `n8n` and `caddy` containers in the "Up" state.
 
 ## 6. Post-Setup and Access
 
 1.  **Access n8n**:
 
-    Open your web browser and navigate to `https://your_domain.com` (replace `your_domain.com` with the domain you configured). Caddy will automatically handle the SSL/TLS certificate provisioning, so it might take a minute or two for the HTTPS to become active on the first run. *(Consider adding a screenshot of the n8n login/setup page)*
+    Open your web browser and navigate to `https://your_domain.com` (replace `your_domain.com` with the domain you configured). Caddy will automatically handle the SSL/TLS certificate provisioning, so it might take a minute or two for the HTTPS to become active on the first run.
 
 2.  **Initial n8n Setup**:
 
@@ -280,7 +280,7 @@ GENERIC_TIMEZONE=Asia/Kolkata # Example: Europe/Berlin, America/New_York
 
 3.  **Explore n8n**:
 
-    Once logged in, you can start creating your workflows, connecting to various services, and automating tasks. *(Consider adding a screenshot of the n8n dashboard)*
+    Once logged in, you can start creating your workflows, connecting to various services, and automating tasks.
 
 ## 7. Troubleshooting and Tips
 

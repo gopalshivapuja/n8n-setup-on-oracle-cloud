@@ -30,13 +30,13 @@ services:
     restart: unless-stopped
     # Sets environment variables for the n8n application.
     environment:
-      - N8N_HOST=ocin8n.shivapuja.com          # Sets the public host for n8n.
+      - N8N_HOST=${N8N_HOST}          # Sets the public host for n8n.
       - N8N_PORT=5678                          # Defines the port n8n listens on internally.
       - N8N_PROTOCOL=http                      # Specifies the protocol for internal communication.
       - NODE_ENV=production                    # Sets Node.js environment to production for optimized performance.
-      - WEBHOOK_URL=https://ocin8n.shivapuja.com/ # Configures the base URL for webhooks.
-      - GENERIC_TIMEZONE=Asia/Kolkata          # Sets the timezone for n8n operations.
-      - N8N_EDITOR_BASE_URL=https://ocin8n.shivapuja.com/ # Sets the base URL for the n8n editor.
+      - WEBHOOK_URL=${WEBHOOK_URL} # Configures the base URL for webhooks.
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}          # Sets the timezone for n8n operations.
+      - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL} # Sets the base URL for the n8n editor.
     # Defines a volume mount for n8n's data, persisting workflows, credentials, and settings.
     # :Z ensures proper SELinux context, and :U ensures file ownership is corrected.
     volumes:

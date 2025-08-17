@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      # Basic Authentication
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-changeme_secure_password}
+      
+      # Network Configuration
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://${EXTERNAL_IP:-localhost}:5678/
+      
+      # Basic Configuration
+      - N8N_EDITOR_BASE_URL=http://${EXTERNAL_IP:-localhost}:5678
+      - N8N_PERSONALIZATION_ENABLED=false
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_VERSION_NOTIFICATIONS_ENABLED=false
+      
+      # Timezone
+      - TZ=${TIMEZONE:-UTC}
+      
+      # Performance (Basic)
+      - N8N_PAYLOAD_SIZE_MAX=16
+      - EXECUTIONS_TIMEOUT=3600
+      - EXECUTIONS_TIMEOUT_MAX=7200
+      
+    volumes:
+      - ./data/n8n:/home/node/.n8n
+    
+    # Security Context
+    user: "1000:1000"
+    
+    # Resource Limits (Conservative for basic setup)
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    
+    # Health Check
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Create named volume for persistence
+volumes:
+  n8n_data:
+    driver: local
+
+networks:
+  default:
+    name: n8n_basic

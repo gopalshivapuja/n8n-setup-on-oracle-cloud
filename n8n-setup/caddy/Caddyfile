@@ -1,0 +1,8 @@
+# This Caddyfile configures the Caddy web server for the n8n instance.
+# It sets up a reverse proxy to direct traffic for 'ocin8n.shivapuja.com' to the n8n service.
+ocin8n.shivapuja.com {
+  # Enables Zstandard and Gzip compression for responses, optimizing content delivery.
+  encode zstd gzip
+  # Proxies incoming requests to the n8n service, which is running on port 5678 within the Docker network.
+  reverse_proxy n8n:5678
+}

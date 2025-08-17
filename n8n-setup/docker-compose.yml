@@ -1,0 +1,50 @@
+# This Docker Compose file defines the services required to run n8n with Caddy as a reverse proxy.
+# It sets up two main services: 'caddy' for handling web traffic and SSL, and 'n8n' for the n8n application itself.
+services:
+  caddy:
+    # Specifies the Docker image for Caddy. Using version 2 for stable and modern features.
+    image: docker.io/caddy:2
+    # Assigns a static container name for easy reference.
+    container_name: caddy
+    # Ensures the container restarts automatically unless it is explicitly stopped.
+    restart: unless-stopped
+    # Maps host ports 80 (HTTP) and 443 (HTTPS) to the Caddy container's respective ports.
+    ports:
+      - "80:80"
+      - "443:443"
+    # Defines volume mounts for Caddy, persisting configuration, data (including SSL certificates),
+    # and ensuring proper SELinux context with :Z.
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro,Z  # Mounts the Caddyfile for routing rules.
+      - ./caddy/data:/data:Z                        # Persistent storage for Caddy's data, including SSL certs.
+      - ./caddy/config:/config:Z                    # Persistent storage for Caddy's configuration.
+    # Connects the Caddy service to the 'web' network, allowing it to communicate with n8n.
+    networks: [web]
+
+  n8n:
+    # Specifies the Docker image for n8n. Using a specific version for stability.
+    image: docker.io/n8nio/n8n:1.106.3
+    # Assigns a static container name for easy reference.
+    container_name: n8n
+    # Ensures the container restarts automatically unless it is explicitly stopped.
+    restart: unless-stopped
+    # Sets environment variables for the n8n application.
+    environment:
+      - N8N_HOST=ocin8n.shivapuja.com          # Sets the public host for n8n.
+      - N8N_PORT=5678                          # Defines the port n8n listens on internally.
+      - N8N_PROTOCOL=http                      # Specifies the protocol for internal communication.
+      - NODE_ENV=production                    # Sets Node.js environment to production for optimized performance.
+      - WEBHOOK_URL=https://ocin8n.shivapuja.com/ # Configures the base URL for webhooks.
+      - GENERIC_TIMEZONE=Asia/Kolkata          # Sets the timezone for n8n operations.
+      - N8N_EDITOR_BASE_URL=https://ocin8n.shivapuja.com/ # Sets the base URL for the n8n editor.
+    # Defines a volume mount for n8n's data, persisting workflows, credentials, and settings.
+    # :Z ensures proper SELinux context, and :U ensures file ownership is corrected.
+    volumes:
+      - ./n8n/data:/home/node/.n8n:Z,U
+    # Connects the n8n service to the 'web' network, allowing it to communicate with Caddy.
+    networks: [web]
+
+networks:
+  web:
+    # Defines a custom bridge network for inter-service communication.
+    driver: bridge
